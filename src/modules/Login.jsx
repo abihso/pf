@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { useState } from 'react';
 import axios from 'axios';
 import icon from "../assets/icons/presby.jpg"

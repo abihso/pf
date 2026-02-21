@@ -121,6 +121,7 @@ const Register = ({userData}) => {
         showNotification('Admin has been saved successfully', 'success')
       })
       .catch((err) => {
+        console.log(err)
         showNotification(err.response?.data?.error || err.response?.data?.message || 'Error saving admin', 'error')
       });
   }
