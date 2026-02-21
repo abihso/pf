@@ -86,7 +86,7 @@ const Admin = () => {
       case "Claims":
         return <Claims userData={infor} />
       case "Apply":
-        return <Apply userData={infor} />
+        return <Apply userData={infor} setHomePage={setCurrentPage} />
       case "Register":
         return <Register userData={infor} />
       case "Messages":

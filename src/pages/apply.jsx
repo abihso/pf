@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-const Apply = ({userData}) => {
+const Apply = ({userData,setHomePage}) => {
    // Notification states
    const [notification, setNotification] = useState({
         show: false,
@@ -385,10 +385,11 @@ const Apply = ({userData}) => {
                 Submit
               </button>
             </div>
+            
           </div>
         </form>
+      <a onClick={() => setHomePage("Dashboard")} className="text-blue-700 underline cursor-pointer" > Go Back </a>
       </div>     
-      
       <p className="text-xs text-center text-[#AAAA] mt-4">Copyright &copy; 2026-2027 AltBit Softwares</p>
       
       {/* Animation styles */}
