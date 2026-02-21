@@ -13,28 +13,35 @@ const Login = () => {
       memberpin: "",
     })
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    setError(false)
-    setSuccess(false)
-    
-    axios.post(`${import.meta.env.VITE_HOST}/auth/login`, { ...credentials, role }).then(res => {
-      console.log(res)
-      window.localStorage.setItem("token", res.data.token)
-      setSuccess(true)
-      setTimeout(() => {
-        window.location.href = "/dashboard"
-      }, 1500);
-    }).catch(err => {
-      console.error(err)
-      setError(true)
-      setErrorMessage(err.response?.data?.message || "Invalid credentials. Please try again.")
-      setTimeout(() => {
-        setError(false)
-      }, 3000);
-    })
-  }
-
+const handleSubmit = (e) => {
+  e.preventDefault()
+  setError(false)
+  setSuccess(false)
+  
+  axios.post(`${import.meta.env.VITE_HOST}/auth/login`, 
+    { ...credentials, role },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    }
+  ).then(res => {
+    console.log(res)
+    window.localStorage.setItem("token", res.data.token)
+    setSuccess(true)
+    setTimeout(() => {
+      window.location.href = "/dashboard"
+    }, 1500);
+  }).catch(err => {
+    console.log(err)
+    setError(true)
+    setErrorMessage(err.response?.data?.message || "Invalid credentials. Please try again.")
+    setTimeout(() => {
+      setError(false)
+    }, 3000);
+  })
+}
   return (
     <div className='flex flex-col lg:flex-row justify-between min-h-screen'>
       {/* Success Notification */}

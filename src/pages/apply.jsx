@@ -74,6 +74,7 @@ const Apply = ({userData,setHomePage}) => {
                 supportdocument: "",
             })
         }).catch((err) => {
+          console.log(err)
             showNotification(err.response?.data?.message || "Error submitting application", "error")
         })
    };
