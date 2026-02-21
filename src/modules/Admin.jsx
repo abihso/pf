@@ -104,6 +104,7 @@ const Admin = () => {
      response = await axios.post(`${import.meta.env.VITE_HOST}/auth/verify`, {
       token : window.localStorage.getItem("token") == null  ?  `no token` : window.localStorage.getItem("token")
     })
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
       navigate("/")
     }
@@ -129,9 +130,9 @@ const Admin = () => {
       {/* LEFT SIDEBAR - Desktop only */}
       <div
         className={`
-          bg-[#F1F2F7] h-screen flex flex-col
+          bg-[#F1F2F7] h-screen flex-col
           transition-all duration-300 ease-in-out
-          hidden lg:block
+          hidden lg:flex
           ${collapsed ? "w-20" : "w-64"}
         `}
       >
@@ -230,15 +231,7 @@ const Admin = () => {
             </button>
           </div>
 
-          {/* Search bar - commented out as in original */}
-          {/* <div className="flex items-center w-full lg:w-2/5">
-            <input
-              type="search"
-              placeholder="Search"
-              className="bg-[#F6F6FB] p-2 w-full rounded-lg pl-3 text-[#6B7280] outline-none"
-            />
-            <BiSearch className="text-2xl -ml-9 text-[#B2BEC6]" />
-          </div> */}
+         
         </div>
 
         {/* Content Area - Shows current page */}
@@ -252,7 +245,7 @@ const Admin = () => {
       {/* RIGHT SIDEBAR - Mobile only navigation */}
       <div
         className={`
-          bg-[#F1F2F7] h-screen fixed top-0 right-0 z-30 lg:hidden
+          bg-[#F1F2F7] h-screen fixed top-0 z-30 lg:hidden
           transition-all duration-300 ease-in-out shadow-xl flex flex-col
           ${mobileMenuOpen ? 'right-0' : '-right-64'}
           w-64
