@@ -1,35 +1,64 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
-const Apply = ({userData,setHomePage}) => {
+const Apply = ({userData, setHomePage}) => {
    // Notification states
    const [notification, setNotification] = useState({
         show: false,
         message: "",
-        type: "" // success, error
+        type: "" 
    })
    
    const [benefit, setBenefit] = useState({
-        status : "",
-        approved_by : "",
-        email : "",
-        memberpin : "",
-        lname : "",
-        fname : "",
-        saddress : "",
-        address : "",
-        date : "",
-        benefit : "",
-        pschool : "",
-        cschool : "",
-        applicant_number : "",
-        head_number : "",
-        HeadteacherName : "",
-        oldpayslip : "",
-        currentpayslip : "",
-        supportdocuments : "",
-        supportdocument : "",
-   })
+        status: "",
+        approved_by: "",
+        email: "",
+        memberpin: "",
+        lname: "",
+        fname: "",
+        saddress: "",
+        address: "",
+        date: "",
+        benefit: "",
+        pschool: "",
+        cschool: "",
+        applicant_number: "",
+        head_number: "",
+        HeadteacherName: "",
+        oldpayslip: null,
+        currentpayslip: null,
+        supportdocuments: null,
+        supportdocument: null,
+   });
+   
+   // Set initial form values based on user role
+   useEffect(() => {
+     if (userData) {
+       // If user is NOT admin, populate with userData values
+       if (userData.status !== "admin") {
+         setBenefit(prev => ({
+           ...prev,
+           email: userData.email || "",
+           memberpin: userData.memberpin || "",
+           lname: userData.lname || "",
+           fname: userData.fname || "",
+           address: userData.address || "",
+           applicant_number: userData.number || "",
+         }));
+       } else {
+         // If user IS admin, start with empty fields
+         setBenefit(prev => ({
+           ...prev,
+           email: "",
+           memberpin: "",
+           lname: "",
+           fname: "",
+           address: "",
+           applicant_number: "",
+         }));
+       }
+     }
+   }, [userData]);
    
    const showNotification = (message, type) => {
         setNotification({ show: true, message, type })
@@ -41,18 +70,77 @@ const Apply = ({userData,setHomePage}) => {
    const handleSubmit = async (e) => {
         e.preventDefault();
         
-        axios.post(
-            `${import.meta.env.VITE_HOST}/admin/process-member-application`, 
-            { ...benefit }, 
-            {
-                headers: {
-                    "Content-Type": "multipart/form-data"
+        // Validate required fields
+        if (!benefit.fname || !benefit.lname || !benefit.email || !benefit.memberpin) {
+          showNotification("Please fill in all required fields", "error");
+          return;
+        }
+        
+        // Create FormData object
+        const formData = new FormData();
+        
+        // Append all text fields (only if they have values)
+        Object.keys(benefit).forEach(key => {
+          if (benefit[key] !== null && benefit[key] !== undefined && 
+              key !== 'oldpayslip' && key !== 'currentpayslip' && 
+              key !== 'supportdocuments' && key !== 'supportdocument') {
+            formData.append(key, benefit[key]);
+          }
+        });
+        
+        // Append files (only if they exist)
+        if (benefit.oldpayslip instanceof File) {
+            formData.append('oldpayslip', benefit.oldpayslip);
+        }
+        if (benefit.currentpayslip instanceof File) {
+            formData.append('currentpayslip', benefit.currentpayslip);
+        }
+        if (benefit.supportdocuments instanceof File) {
+            formData.append('supportdocuments', benefit.supportdocuments);
+        }
+        if (benefit.supportdocument instanceof File) {
+            formData.append('supportdocument', benefit.supportdocument);
+        }
+        try {
+            const res = await axios.post(
+                `${import.meta.env.VITE_HOST}/admin/process-member-application`, 
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data"
+                    }
                 }
-            }
-        ).then(res => {
-            showNotification(res.data.message, "success")
-            // Clear form after successful submission
-            setBenefit({
+            );
+            
+            showNotification(res.data.message, "success");
+            
+            // Clear form after successful submission based on user role
+            if (userData.status !== "admin") {
+              // For non-admin users, reset to their userData values
+              setBenefit({
+                status: "",
+                approved_by: "",
+                email: userData?.email || "",
+                memberpin: userData?.memberpin || "",
+                lname: userData?.lname || "",
+                fname: userData?.fname || "",
+                saddress: "",
+                address: userData?.address || "",
+                date: "",
+                benefit: "",
+                pschool: "",
+                cschool: "",
+                applicant_number: userData?.number || "",
+                head_number: "",
+                HeadteacherName: "",
+                oldpayslip: null,
+                currentpayslip: null,
+                supportdocuments: null,
+                supportdocument: null,
+              });
+            } else {
+              // For admin users, reset to empty
+              setBenefit({
                 status: "",
                 approved_by: "",
                 email: "",
@@ -68,16 +156,46 @@ const Apply = ({userData,setHomePage}) => {
                 applicant_number: "",
                 head_number: "",
                 HeadteacherName: "",
-                oldpayslip: "",
-                currentpayslip: "",
-                supportdocuments: "",
-                supportdocument: "",
-            })
-        }).catch((err) => {
-          console.log(err)
-            showNotification(err.response?.data?.message || "Error submitting application", "error")
-        })
+                oldpayslip: null,
+                currentpayslip: null,
+                supportdocuments: null,
+                supportdocument: null,
+              });
+            }
+            
+            // Reset file input fields
+            e.target.reset();
+            
+        } catch (err) {
+            console.error("Submission error:", err);
+            showNotification(err.response?.data?.message || "Error submitting application", "error");
+        }
    };
+  
+  // Handle file input changes
+  const handleFileChange = (e, fieldName) => {
+    if (e.target.files && e.target.files[0]) {
+      setBenefit({
+        ...benefit,
+        [fieldName]: e.target.files[0]
+      });
+    }
+  };
+  
+  // Handle input changes with proper null checks
+  const handleInputChange = (e, fieldName) => {
+    setBenefit({
+      ...benefit,
+      [fieldName]: e.target.value
+    });
+  };
+  
+  // Determine if field should be disabled (disabled for non-admin users)
+  const isFieldDisabled = (fieldName) => {
+    // Fields that should use userData for non-admin users
+    const userDataFields = ['fname', 'lname', 'email', 'memberpin', 'address', 'applicant_number'];
+    return userData.status !== "admin" && userDataFields.includes(fieldName);
+  };
   
   return (
     <div className="space-y-4 mb-10 px-2 sm:px-0 relative">
@@ -108,7 +226,7 @@ const Apply = ({userData,setHomePage}) => {
             <span className="font-bold text-xl sm:text-2xl">Dashboard</span>{" "}
             <span className="text-xs sm:text-sm font-bold text-[#54A3E2]">/ Apply</span>
           </p>
-          <p className="text-xs text-[#AAAAAA]">welcome back, {userData.fname}</p>
+          <p className="text-xs text-[#AAAAAA]">welcome back, {userData?.fname || 'User'}</p>
         </div>
         <span className="text-xs text-[#AAAAAA]">
           {new Date().toDateString()}
@@ -130,11 +248,12 @@ const Apply = ({userData,setHomePage}) => {
                   placeholder="Enter First Name" 
                   id="fname" 
                   className="p-2 w-full text-sm border-2 rounded bg-transparent disabled:cursor-not-allowed focus:outline-none focus:border-blue-400"
-                  value={userData.status == "admin" ? benefit.fname : userData.fname}
-                  disabled={userData.status !== "admin"}
-                  onChange={e => setBenefit({...benefit, fname: e.target.value})}
+                  value={benefit.fname || ''}
+                  disabled={isFieldDisabled('fname')}
+                  onChange={e => handleInputChange(e, 'fname')}
                   required   
                 />
+                {isFieldDisabled('fname') && <p className="text-xs text-gray-500 mt-1">Field disabled - uses your profile data</p>}
               </div>
               
               <div className="w-full">
@@ -144,11 +263,12 @@ const Apply = ({userData,setHomePage}) => {
                   placeholder="Enter Other Names" 
                   id="mname" 
                   className="p-2 w-full text-sm border-2 rounded bg-transparent disabled:cursor-not-allowed focus:outline-none focus:border-blue-400"
-                  value={userData.status == "admin" ? benefit.lname : userData.lname}
-                  disabled={userData.status !== "admin"}
-                  onChange={e => setBenefit({...benefit, lname: e.target.value})}
+                  value={benefit.lname || ''}
+                  disabled={isFieldDisabled('lname')}
+                  onChange={e => handleInputChange(e, 'lname')}
                   required  
                 />
+                {isFieldDisabled('lname') && <p className="text-xs text-gray-500 mt-1">Field disabled - uses your profile data</p>}
               </div>
             </div>
             
@@ -160,8 +280,8 @@ const Apply = ({userData,setHomePage}) => {
                   type="date"
                   id="date"
                   className="p-2 w-full text-sm border-2 rounded bg-transparent focus:outline-none focus:border-blue-400"
-                  value={benefit.date}
-                  onChange={e => setBenefit({...benefit, date: e.target.value})}
+                  value={benefit.date || ''}
+                  onChange={e => handleInputChange(e, 'date')}
                   required
                 />
               </div>
@@ -172,12 +292,13 @@ const Apply = ({userData,setHomePage}) => {
                   type="text"
                   placeholder="Enter Applicant Phone Number"
                   id="apn"
-                  value={userData.status == "admin" ? benefit.applicant_number : userData.number}
-                  disabled={userData.status !== "admin"}
-                  onChange={e => setBenefit({...benefit, applicant_number: e.target.value})}
+                  value={benefit.applicant_number || ''}
+                  disabled={isFieldDisabled('applicant_number')}
+                  onChange={e => handleInputChange(e, 'applicant_number')}
                   required
                   className="p-2 w-full text-sm border-2 rounded bg-transparent disabled:cursor-not-allowed focus:outline-none focus:border-blue-400" 
                 />
+                {isFieldDisabled('applicant_number') && <p className="text-xs text-gray-500 mt-1">Field disabled - uses your profile data</p>}
               </div>
               
               <div className="w-full">
@@ -186,34 +307,41 @@ const Apply = ({userData,setHomePage}) => {
                   type="text"
                   placeholder="Enter Address"
                   id="address"
-                  value={userData.status == "admin" ? benefit.address : userData.address}
-                  disabled={userData.status !== "admin"}
-                  onChange={e => setBenefit({...benefit, address: e.target.value})}
+                  value={benefit.address || ''}
+                  disabled={isFieldDisabled('address')}
+                  onChange={e => handleInputChange(e, 'address')}
                   required
                   className="p-2 w-full text-sm border-2 rounded bg-transparent disabled:cursor-not-allowed focus:outline-none focus:border-blue-400" 
                 />
+                {isFieldDisabled('address') && <p className="text-xs text-gray-500 mt-1">Field disabled - uses your profile data</p>}
               </div>
               
               <div className="w-full">
                 <label htmlFor="benefit" className="block text-sm font-medium mb-1">Type of Benefit</label>
                 <select 
-                  value={benefit.benefit}
-                  onChange={(e) => setBenefit({...benefit, benefit: e.target.value})} 
+                  value={benefit.benefit || ''}
+                  onChange={(e) => handleInputChange(e, 'benefit')} 
                   id="benefit" 
                   className="p-2 w-full text-sm border-2 rounded bg-transparent focus:outline-none focus:border-blue-400"
                   required
                 >
                   <option value="">Select benefit</option>
-                  <option value="death of spouse">Death of spouse</option>
-                  <option value="death of child">Death of Child</option>
-                  <option value="death of member">Death of Member</option>
-                  <option value="marriage">Wedding/Marriage</option>
-                  <option value="hospitalization">Hospitalization</option>
-                  <option value="retirement">Retirement</option>
-                  <option value="release">Release</option>
-                  <option value="death of parent">Death of Parent</option>
-                  <option value="disaster">Disaster</option>
-                  <option value="wrongful deduction">Wrongful Deduction</option>
+                  {
+                    userData.status == "admin" ? (<>
+                          <option value="death of member">Death of Member</option>
+                    </>) : (<>
+                          <option value="death of spouse">Death of spouse</option>
+                          <option value="death of child">Death of Child</option>
+                          <option value="death of member">Death of Member</option>
+                          <option value="marriage">Wedding/Marriage</option>
+                          <option value="hospitalization">Hospitalization</option>
+                          <option value="retirement">Retirement</option>
+                          <option value="release">Release</option>
+                          <option value="death of parent">Death of Parent</option>
+                          <option value="disaster">Disaster</option>
+                          <option value="wrongful deduction">Wrongful Deduction</option>
+                      </>)
+                  }
                 </select>
               </div>
             </div>
@@ -227,11 +355,12 @@ const Apply = ({userData,setHomePage}) => {
                   placeholder="Enter Email here" 
                   id="email" 
                   className="p-2 w-full text-sm border-2 rounded bg-transparent disabled:cursor-not-allowed focus:outline-none focus:border-blue-400"
-                  value={userData.status == "admin" ? benefit.email : userData.email}
-                  disabled={userData.status !== "admin"}
-                  onChange={e => setBenefit({...benefit, email: e.target.value})}
+                  value={benefit.email || ''}
+                  disabled={isFieldDisabled('email')}
+                  onChange={e => handleInputChange(e, 'email')}
                   required  
                 />
+                {isFieldDisabled('email') && <p className="text-xs text-gray-500 mt-1">Field disabled - uses your profile data</p>}
               </div>
               
               <div className="w-full">
@@ -241,11 +370,12 @@ const Apply = ({userData,setHomePage}) => {
                   placeholder="Enter Membership Pin" 
                   id="pin" 
                   className="p-2 w-full text-sm border-2 rounded bg-transparent disabled:cursor-not-allowed focus:outline-none focus:border-blue-400"
-                  value={userData.status == "admin" ? benefit.memberpin : userData.memberpin}
-                  disabled={userData.status !== "admin"}
-                  onChange={e => setBenefit({...benefit, memberpin: e.target.value})}
+                  value={benefit.memberpin || ''}
+                  disabled={isFieldDisabled('memberpin')}
+                  onChange={e => handleInputChange(e, 'memberpin')}
                   required
                 />
+                {isFieldDisabled('memberpin') && <p className="text-xs text-gray-500 mt-1">Field disabled - uses your profile data</p>}
               </div>
               
               <div className="w-full">
@@ -254,8 +384,8 @@ const Apply = ({userData,setHomePage}) => {
                   type="text"
                   placeholder="Enter data here" 
                   id="school"
-                  value={benefit.cschool}
-                  onChange={e => setBenefit({...benefit, cschool: e.target.value})}
+                  value={benefit.cschool || ''}
+                  onChange={e => handleInputChange(e, 'cschool')}
                   className="p-2 w-full text-sm border-2 rounded bg-transparent focus:outline-none focus:border-blue-400"
                   required
                 />
@@ -271,8 +401,8 @@ const Apply = ({userData,setHomePage}) => {
                   placeholder="Enter Headmaster's Number" 
                   id="hname" 
                   className="p-2 w-full text-sm border-2 rounded bg-transparent focus:outline-none focus:border-blue-400"
-                  value={benefit.head_number}
-                  onChange={e => setBenefit({...benefit, head_number: e.target.value})}
+                  value={benefit.head_number || ''}
+                  onChange={e => handleInputChange(e, 'head_number')}
                   maxLength={14}
                   required
                 />
@@ -282,8 +412,8 @@ const Apply = ({userData,setHomePage}) => {
                 <label htmlFor="pschool" className="block text-sm font-medium mb-1">Previous School/Office</label>
                 <input
                   type="text"
-                  value={benefit.pschool}
-                  onChange={e => setBenefit({...benefit, pschool: e.target.value})}
+                  value={benefit.pschool || ''}
+                  onChange={e => handleInputChange(e, 'pschool')}
                   placeholder="Enter data here" 
                   id="pschool" 
                   className="p-2 w-full text-sm border-2 rounded bg-transparent focus:outline-none focus:border-blue-400"
@@ -297,8 +427,8 @@ const Apply = ({userData,setHomePage}) => {
                   type="text"
                   placeholder="Enter Headmaster's Name"
                   id="hpn"
-                  value={benefit.HeadteacherName}
-                  onChange={e => setBenefit({...benefit, HeadteacherName: e.target.value})}
+                  value={benefit.HeadteacherName || ''}
+                  onChange={e => handleInputChange(e, 'HeadteacherName')}
                   className="p-2 w-full text-sm border-2 rounded bg-transparent focus:outline-none focus:border-blue-400"
                   required
                 />
@@ -316,10 +446,12 @@ const Apply = ({userData,setHomePage}) => {
                 <input
                   type="file"
                   id="oldpayslip"
-                  onChange={e => setBenefit({...benefit, oldpayslip: e.target.files[0]})}
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={(e) => handleFileChange(e, 'oldpayslip')}
                   required
                   className="p-2 w-full text-sm border-2 rounded bg-transparent file:mr-2 file:py-1 file:px-3 file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                 />
+                {benefit.oldpayslip && <p className="text-xs mt-1 text-green-600">File selected: {benefit.oldpayslip.name}</p>}
               </div>
               
               <div className="w-full">
@@ -327,10 +459,12 @@ const Apply = ({userData,setHomePage}) => {
                 <input
                   type="file"
                   id="cp"
+                  accept=".pdf,.jpg,.jpeg,.png"
                   className="p-2 w-full text-sm border-2 rounded bg-transparent file:mr-2 file:py-1 file:px-3 file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                  onChange={e => setBenefit({...benefit, currentpayslip: e.target.files[0]})}
+                  onChange={(e) => handleFileChange(e, 'currentpayslip')}
                   required
                 />
+                {benefit.currentpayslip && <p className="text-xs mt-1 text-green-600">File selected: {benefit.currentpayslip.name}</p>}
               </div>
               
               <div className="w-full">
@@ -338,10 +472,12 @@ const Apply = ({userData,setHomePage}) => {
                 <input
                   type="file"
                   id="sd"
+                  accept=".pdf,.jpg,.jpeg,.png"
                   className="p-2 w-full text-sm border-2 rounded bg-transparent file:mr-2 file:py-1 file:px-3 file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                  onChange={e => setBenefit({...benefit, supportdocuments: e.target.files[0]})}
+                  onChange={(e) => handleFileChange(e, 'supportdocuments')}
                   required
                 />
+                {benefit.supportdocuments && <p className="text-xs mt-1 text-green-600">File selected: {benefit.supportdocuments.name}</p>}
               </div>
               
               <div className="w-full">
@@ -349,10 +485,12 @@ const Apply = ({userData,setHomePage}) => {
                 <input
                   type="file"
                   id="od"
+                  accept=".pdf,.jpg,.jpeg,.png"
                   className="p-2 w-full text-sm border-2 rounded bg-transparent file:mr-2 file:py-1 file:px-3 file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                  onChange={e => setBenefit({...benefit, supportdocument: e.target.files[0]})}
+                  onChange={(e) => handleFileChange(e, 'supportdocument')}
                   required
                 />
+                {benefit.supportdocument && <p className="text-xs mt-1 text-green-600">File selected: {benefit.supportdocument.name}</p>}
               </div>
             </div>
           </div>
@@ -376,6 +514,55 @@ const Apply = ({userData,setHomePage}) => {
               <button 
                 type="reset" 
                 className="w-full sm:w-24 bg-blue-400 font-bold text-white py-2 rounded-md hover:bg-blue-500 transition-colors"
+                onClick={() => {
+                  if (userData.status !== "admin") {
+                    // For non-admin users, reset to their userData values
+                    setBenefit({
+                      status: "",
+                      approved_by: "",
+                      email: userData?.email || "",
+                      memberpin: userData?.memberpin || "",
+                      lname: userData?.lname || "",
+                      fname: userData?.fname || "",
+                      saddress: "",
+                      address: userData?.address || "",
+                      date: "",
+                      benefit: "",
+                      pschool: "",
+                      cschool: "",
+                      applicant_number: userData?.number || "",
+                      head_number: "",
+                      HeadteacherName: "",
+                      oldpayslip: null,
+                      currentpayslip: null,
+                      supportdocuments: null,
+                      supportdocument: null,
+                    });
+                  } else {
+                    // For admin users, reset to empty
+                    setBenefit({
+                      status: "",
+                      approved_by: "",
+                      email: "",
+                      memberpin: "",
+                      lname: "",
+                      fname: "",
+                      saddress: "",
+                      address: "",
+                      date: "",
+                      benefit: "",
+                      pschool: "",
+                      cschool: "",
+                      applicant_number: "",
+                      head_number: "",
+                      HeadteacherName: "",
+                      oldpayslip: null,
+                      currentpayslip: null,
+                      supportdocuments: null,
+                      supportdocument: null,
+                    });
+                  }
+                }}
               >
                 Clear
               </button>
@@ -386,29 +573,12 @@ const Apply = ({userData,setHomePage}) => {
                 Submit
               </button>
             </div>
-            
           </div>
         </form>
-      <a onClick={() => setHomePage("Dashboard")} className="text-blue-700 underline cursor-pointer" > Go Back </a>
+        <a onClick={() => setHomePage("Dashboard")} className="text-blue-700 underline cursor-pointer" > Go Back </a>
       </div>     
       <p className="text-xs text-center text-[#AAAA] mt-4">Copyright &copy; 2026-2027 AltBit Softwares</p>
       
-      {/* Animation styles */}
-      <style jsx>{`
-        @keyframes slideDown {
-          from {
-            transform: translate(-50%, -100%);
-            opacity: 0;
-          }
-          to {
-            transform: translate(-50%, 0);
-            opacity: 1;
-          }
-        }
-        .animate-slide-down {
-          animation: slideDown 0.3s ease-out;
-        }
-      `}</style>
     </div>
   );
 };

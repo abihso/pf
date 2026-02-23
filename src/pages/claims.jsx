@@ -14,13 +14,12 @@ import StatCard from "../h/StatCard";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const Claims = ({userData}) => {
+const Claims = ({ userData }) => {
   const [closeModal, setCloseModal] = useState(false)
   const [closePayModal, setClosePayModal] = useState(false)
   const [claimsData, setClaimsData] = useState([])
   const [refresh, setRefresh] = useState(0)
   const navigate = useNavigate();
-
   // Notification states
   const [notification, setNotification] = useState({
     show: false,
@@ -54,7 +53,6 @@ const Claims = ({userData}) => {
   }
   
   const viewApplication = (appId, pin) => {
-    console.log(pin)
     navigate(`/view/${appId}/${pin}`);
   };
   
@@ -103,7 +101,7 @@ const Claims = ({userData}) => {
     axios
       .get(`${import.meta.env.VITE_HOST}/admin/verify-user-claim/${data.pin}/${data.benefit}`)
       .then((res) => {
-        console.log(res);
+
         if (res.data.data.length == 0) {
           showNotification(`${data.benefit} benefit has not been applied for yet`, "error")
         } else {
@@ -122,12 +120,12 @@ const Claims = ({userData}) => {
   const pay = (e) => {
     e.preventDefault()
     axios
-      .post(
+      .patch(
         `${import.meta.env.VITE_HOST}/admin/pay-benefit`,
         {
           pin: data.pin,
           benefit: data.benefit,
-          approved_by: localStorage.getItem("name"),
+          approved_by: `${userData.fname} ${userData.lname}`,
         }
       )
       .then(() => {
@@ -135,7 +133,6 @@ const Claims = ({userData}) => {
         setClosePayModal(false)
       })
       .catch((err) => {
-        console.log(err)
         showNotification(err.response?.data?.message || "Problem processing payment", "error")
       }).finally(() =>setData({
       benefit: "",
@@ -169,7 +166,7 @@ const Claims = ({userData}) => {
          })
       .catch((err) => {
         showNotification(err.response?.data?.message || "Error updating record", "error")
-        console.log(err)
+
       });
     }
     
@@ -349,7 +346,7 @@ const Claims = ({userData}) => {
       </div>
       
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-2">
+      <div className="flex flex-col gap-2">
         <button 
           disabled={userData.status !== "admin"} 
           className="bg-[#E4E6F4] disabled:cursor-not-allowed disabled:opacity-50 p-2 rounded-md text-[#AAAAAA] text-sm w-full sm:w-auto hover:bg-[#d0d2e0] transition-colors" 
@@ -521,22 +518,7 @@ const Claims = ({userData}) => {
         </div>
       </div>
       
-      {/* Animation styles */}
-      <style jsx>{`
-        @keyframes slideDown {
-          from {
-            transform: translate(-50%, -100%);
-            opacity: 0;
-          }
-          to {
-            transform: translate(-50%, 0);
-            opacity: 1;
-          }
-        }
-        .animate-slide-down {
-          animation: slideDown 0.3s ease-out;
-        }
-      `}</style>
+ 
     </div>
   );
 };

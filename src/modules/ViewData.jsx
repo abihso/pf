@@ -32,7 +32,8 @@ const ApplicationView = () => {
         setImage(res.data.data.img);
       }).catch(err => console.log(err));
     fetchApplication();
-  }, [appId,pin]);
+  }, [appId, pin]);
+  console.log(`${import.meta.env.VITE_HOST}/admin/get-file/${image}/image`)
   const downloadFile = async (filename) => {
     if (!filename) {
       alert("No file available for download");

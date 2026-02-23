@@ -41,6 +41,7 @@ const Settings = ({ userData }) => {
       setNext("");
       setConfirm("");
     }).catch(err => {
+      console.log(err)
       showNotification(err.response?.data?.message || "Error updating password", "error");
     }).finally(() => {
       setLoading(false);
@@ -135,22 +136,7 @@ const Settings = ({ userData }) => {
         </form>
       </div>
 
-      {/* Add this style to your global CSS or in a style tag */}
-      <style jsx>{`
-        @keyframes slideDown {
-          from {
-            transform: translate(-50%, -100%);
-            opacity: 0;
-          }
-          to {
-            transform: translate(-50%, 0);
-            opacity: 1;
-          }
-        }
-        .animate-slide-down {
-          animation: slideDown 0.3s ease-out;
-        }
-      `}</style>
+      
     </div>
   );
 };

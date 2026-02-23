@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { IoIosClose } from "react-icons/io"; 
-import { BiPlus, BiSearch, BiDoughnutChart } from "react-icons/bi";
+import {  BiSearch, BiDoughnutChart } from "react-icons/bi";
 import { FaRegEye } from "react-icons/fa"; 
-import { GrFormCheckmark } from "react-icons/gr"; 
 import { MdMultilineChart, MdAddChart } from "react-icons/md";
 import { HiOutlineDotsCircleHorizontal } from "react-icons/hi";
-import { CiMoneyBill } from "react-icons/ci";
 import { TbRefresh } from "react-icons/tb"; 
 import StatCard from "../h/StatCard";
 import axios from "axios";
@@ -105,7 +103,10 @@ const Register = ({userData}) => {
         img:null,
         password:"",
         memberpin:"",
-    })
+      })
+      setTimeout(() => {
+        setUserModal(false)
+      }, 1000);
     })
   };
   
@@ -123,7 +124,24 @@ const Register = ({userData}) => {
       .catch((err) => {
         console.log(err)
         showNotification(err.response?.data?.error || err.response?.data?.message || 'Error saving admin', 'error')
-      });
+      }).finally(() => {
+        setTimeout(() => {
+        setadminModal(false)
+        }, 1000);
+         setInfor({
+        fname:"",
+        lname:"",
+        address:"",
+        school:"",
+        dob:"",
+        gender:"",
+        email:"",
+        number:"",
+        img:null,
+        password:"",
+        memberpin:"",
+      })
+      })
   }
   
    const deleteMember = (id) => {
@@ -193,7 +211,23 @@ const Register = ({userData}) => {
           <div className="bg-[#1A1A2E] rounded-md p-5 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <form onSubmit={handleAddMemberForm}>
               <div className="flex justify-end">
-                <IoIosClose className="text-red-600 text-3xl cursor-pointer" onClick={() => setUserModal(false)} />
+                <IoIosClose className="text-red-600 text-3xl cursor-pointer" onClick={() => {
+                  setUserModal(false)
+                  setInfor(
+                  {
+                      fname:"",
+                      lname:"",
+                      address:"",
+                      school:"",
+                      dob:"",
+                      gender:"",
+                      email:"",
+                      number:"",
+                      img:null,
+                      password:"",
+                      memberpin:"",
+                  })
+                }} />
               </div>
               <p className="text-white font-bold text-lg mb-4">Register New User</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -287,7 +321,21 @@ const Register = ({userData}) => {
                 </select>
               </div>
               <div className="flex flex-col sm:flex-row justify-center gap-2 mt-5">
-                <button type="reset" className="bg-red-500 w-full sm:w-40 py-2 rounded-md font-bold text-white hover:bg-red-600 transition-colors">
+                <button onClick={() => setInfor(
+                  {
+                      fname:"",
+                      lname:"",
+                      address:"",
+                      school:"",
+                      dob:"",
+                      gender:"",
+                      email:"",
+                      number:"",
+                      img:null,
+                      password:"",
+                      memberpin:"",
+                  }
+                )} type="reset" className="bg-red-500 w-full sm:w-40 py-2 rounded-md font-bold text-white hover:bg-red-600 transition-colors">
                   Clear
                 </button>
                 <button type="submit" className="bg-green-500 w-full sm:w-40 py-2 rounded-md font-bold text-white hover:bg-green-600 transition-colors">
@@ -305,7 +353,23 @@ const Register = ({userData}) => {
           <div className="bg-[#1A1A2E] rounded-md p-5 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <form onSubmit={addAdmin}>
               <div className="flex justify-end">
-                <IoIosClose className="text-red-600 text-3xl cursor-pointer" onClick={() => setadminModal(false)} />
+                <IoIosClose className="text-red-600 text-3xl cursor-pointer" onClick={() => {
+                  setadminModal(false)
+                   setInfor(
+                  {
+                      fname:"",
+                      lname:"",
+                      address:"",
+                      school:"",
+                      dob:"",
+                      gender:"",
+                      email:"",
+                      number:"",
+                      img:null,
+                      password:"",
+                      memberpin:"",
+                  })
+                }} />
               </div>
               <p className="text-white font-bold text-lg mb-4">Register New Administrator</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -381,7 +445,21 @@ const Register = ({userData}) => {
                 </select>
               </div>
               <div className="flex flex-col sm:flex-row justify-center gap-2 mt-5">
-                <button type="reset" className="bg-red-500 w-full sm:w-40 py-2 rounded-md font-bold text-white hover:bg-red-600 transition-colors">
+                <button  onClick={() => setInfor(
+                  {
+                      fname:"",
+                      lname:"",
+                      address:"",
+                      school:"",
+                      dob:"",
+                      gender:"",
+                      email:"",
+                      number:"",
+                      img:null,
+                      password:"",
+                      memberpin:"",
+                  }
+                )} type="reset" className="bg-red-500 w-full sm:w-40 py-2 rounded-md font-bold text-white hover:bg-red-600 transition-colors">
                   Clear
                 </button>
                 <button type="submit" className="bg-green-500 w-full sm:w-40 py-2 rounded-md font-bold text-white hover:bg-green-600 transition-colors">
@@ -443,7 +521,7 @@ const Register = ({userData}) => {
       </div>
       
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-2">
+      <div className="flex flex-col gap-2">
         <button className="bg-[#E4E6F4] p-2 rounded-md text-[#AAAAAA] text-sm w-full sm:w-auto hover:bg-[#d0d2e0] transition-colors" onClick={() => setUserModal(true)}>
           Register New Member
         </button>
@@ -571,22 +649,6 @@ const Register = ({userData}) => {
         </div>
       </div>
       
-      {/* Add this style to your global CSS or in a style tag */}
-      <style jsx>{`
-        @keyframes slideDown {
-          from {
-            transform: translate(-50%, -100%);
-            opacity: 0;
-          }
-          to {
-            transform: translate(-50%, 0);
-            opacity: 1;
-          }
-        }
-        .animate-slide-down {
-          animation: slideDown 0.3s ease-out;
-        }
-      `}</style>
     </div>
   );
 };

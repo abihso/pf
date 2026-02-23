@@ -12,8 +12,8 @@ import { IoIosClose } from "react-icons/io";
 import axios from "axios";
 
 const Dashboard = ({ setHomePage, userData }) => {
-      console.log(userData)
-      const [data, setData] = useState([])
+
+  const [data, setData] = useState([])
       const [refresh,setRefresh] = useState(0)
       
       // Notification states
@@ -446,7 +446,7 @@ const Dashboard = ({ setHomePage, userData }) => {
               <button onClick={() => setHomePage("Settings")} className="flex items-center justify-center gap-2 text-green-400 font-bold border w-full py-2 rounded-md text-sm hover:bg-green-50 transition-colors">
                 <AiTwotoneSetting /> Settings
               </button>
-              <button onClick={() => setCloseModal(true)} className="flex items-center justify-center gap-2 text-blue-400 border-blue-400 font-bold border w-full py-2 rounded-md text-sm hover:bg-blue-50 transition-colors">
+              <button onClick={() => setCloseModal(true)} disabled={userData.status != "admin"} className="flex items-center justify-center gap-2 disabled:cursor-not-allowed text-blue-400 border-blue-400 font-bold border w-full py-2 rounded-md text-sm hover:bg-blue-50 transition-colors">
                 <IoMdSend /> Message
               </button>
               <button onClick={() => setHomePage("Apply")} className="flex items-center justify-center gap-2 text-red-400 font-bold border border-red-400 w-full py-2 rounded-md text-sm hover:bg-red-50 transition-colors">
@@ -664,23 +664,7 @@ const Dashboard = ({ setHomePage, userData }) => {
           </div>
         )}
       </div>
-      
-      {/* Animation styles */}
-      <style jsx>{`
-        @keyframes slideDown {
-          from {
-            transform: translate(-50%, -100%);
-            opacity: 0;
-          }
-          to {
-            transform: translate(-50%, 0);
-            opacity: 1;
-          }
-        }
-        .animate-slide-down {
-          animation: slideDown 0.3s ease-out;
-        }
-      `}</style>
+    
     </div>
   );
 };
