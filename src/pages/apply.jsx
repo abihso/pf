@@ -31,10 +31,8 @@ const Apply = ({userData, setHomePage}) => {
         supportdocument: null,
    });
    
-   // Set initial form values based on user role
    useEffect(() => {
      if (userData) {
-       // If user is NOT admin, populate with userData values
        if (userData.status !== "admin") {
          setBenefit(prev => ({
            ...prev,
@@ -46,7 +44,6 @@ const Apply = ({userData, setHomePage}) => {
            applicant_number: userData.number || "",
          }));
        } else {
-         // If user IS admin, start with empty fields
          setBenefit(prev => ({
            ...prev,
            email: "",
@@ -70,11 +67,11 @@ const Apply = ({userData, setHomePage}) => {
    const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // Validate required fields
         if (!benefit.fname || !benefit.lname || !benefit.email || !benefit.memberpin) {
           showNotification("Please fill in all required fields", "error");
           return;
-        }
+     }
+     
         
         // Create FormData object
         const formData = new FormData();
