@@ -8,6 +8,7 @@ const Apply = ({userData, setHomePage}) => {
         message: "",
         type: "" 
    })
+   const [submitting,setSubmitting] = useState(false)
    
    const [benefit, setBenefit] = useState({
         status: "",
@@ -72,7 +73,7 @@ const Apply = ({userData, setHomePage}) => {
           return;
      }
      
-        
+        setSubmitting(true)
         // Create FormData object
         const formData = new FormData();
         
@@ -166,7 +167,9 @@ const Apply = ({userData, setHomePage}) => {
         } catch (err) {
             console.error("Submission error:", err);
             showNotification(err.response?.data?.message || "Error submitting application", "error");
-        }
+        } finally {
+          setSubmitting(false)
+     }
    };
   
   // Handle file input changes
@@ -565,9 +568,12 @@ const Apply = ({userData, setHomePage}) => {
               </button>
               <button 
                 type="submit" 
+                disabled={submitting}
                 className="w-full sm:w-24 bg-green-400 font-bold text-white py-2 rounded-md hover:bg-green-500 transition-colors"
               >
-                Submit
+                {
+                  submitting  ? "Submitting" : "Submit"
+                }
               </button>
             </div>
           </div>

@@ -33,14 +33,34 @@ const ApplicationView = () => {
       }).catch(err => console.log(err));
     fetchApplication();
   }, [appId, pin]);
-  console.log(`${import.meta.env.VITE_HOST}/admin/get-file/${image}/image`)
-  const downloadFile = async (filename) => {
-    if (!filename) {
-      alert("No file available for download");
-      return;
-    }
+// In your frontend, try this debug version
+  const downloadFile = async (fileUrl) => {
+    
+    const fileName = 'downloaded-file.pdf'; // Custom filename
 
-    await axios.get(`${import.meta.env.VITE_HOST}/admin/get-file/${filename}/document`);
+    try {
+      // Method 1: Using fetch and blob (works for any file type)
+      const response = await fetch(fileUrl);
+      const blob = await response.blob();
+      
+      // Create a temporary URL for the blob
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      // Create a link element and trigger download
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+      
+      console.log('File downloaded successfully!');
+    } catch (error) {
+      console.error('Error downloading file:', error);
+    }
   };
   const capitalize = (str) => {
     if (!str) return "";
@@ -98,7 +118,7 @@ const ApplicationView = () => {
       <div className="flex justify-between mb-4">
         <img
           className="w-28 h-32"
-          src={`${import.meta.env.VITE_HOST}/admin/get-file/${image}/image`}
+          src={image}
           alt=""
         />
       </div>

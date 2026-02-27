@@ -13,7 +13,8 @@ const Register = ({userData}) => {
   const [refresh, setRefresh] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(5)
-  
+  const [deleting, setDeleting] = useState(false)
+  const [submitting,setSubmitting] = useState(false)
   // Notification states
   const [notification, setNotification] = useState({
     show: false,
@@ -39,7 +40,6 @@ const Register = ({userData}) => {
       axios.get(`${import.meta.env.VITE_HOST}/admin/get-all-applications`),
       axios.get(`${import.meta.env.VITE_HOST}/admin/get-all-members`),
     ]).then(res => {
-      console.log(res)
       setDashbordInfor({
         total : res[4].data.data.length,
         pending : res[0].data.data.length,
@@ -76,7 +76,8 @@ const Register = ({userData}) => {
     })
     
    const handleAddMemberForm = (e) => {
-    e.preventDefault();
+     e.preventDefault();
+     setSubmitting(true)
     axios.post(`${import.meta.env.VITE_HOST}/admin/register-member`, infor, {
       headers: {
         "Content-Type": "multipart/form-data",
@@ -107,11 +108,13 @@ const Register = ({userData}) => {
       setTimeout(() => {
         setUserModal(false)
       }, 1000);
+      setSubmitting(false)
     })
   };
   
   const addAdmin = (e) => {
     e.preventDefault()
+    setSubmitting(true)
     axios
       .post(`${import.meta.env.VITE_HOST}/admin/register-admin`, infor, {
       headers: {
@@ -122,7 +125,6 @@ const Register = ({userData}) => {
         showNotification('Admin has been saved successfully', 'success')
       })
       .catch((err) => {
-        console.log(err)
         showNotification(err.response?.data?.error || err.response?.data?.message || 'Error saving admin', 'error')
       }).finally(() => {
         setTimeout(() => {
@@ -141,11 +143,13 @@ const Register = ({userData}) => {
         password:"",
         memberpin:"",
       })
+        setSubmitting(false)
       })
   }
   
    const deleteMember = (id) => {
-    if (window.confirm("Are you sure you want to delete this member?")) {
+     if (window.confirm("Are you sure you want to delete this member?")) {
+      setDeleting(true)
       axios
         .delete(`${import.meta.env.VITE_HOST}/admin/delete-member/${id}`)
         .then(() => {
@@ -154,8 +158,8 @@ const Register = ({userData}) => {
         })
         .catch((err) => {
           showNotification('Error deleting member', 'error')
-          console.log(err)
-        });
+        })
+        .finally(() => setDeleting(false))
     }
   }
   
@@ -338,8 +342,10 @@ const Register = ({userData}) => {
                 )} type="reset" className="bg-red-500 w-full sm:w-40 py-2 rounded-md font-bold text-white hover:bg-red-600 transition-colors">
                   Clear
                 </button>
-                <button type="submit" className="bg-green-500 w-full sm:w-40 py-2 rounded-md font-bold text-white hover:bg-green-600 transition-colors">
-                  Submit
+                <button type="submit" disabled = {submitting}  className="bg-green-500 w-full sm:w-40 py-2 disabled:cursor-not-allowed rounded-md font-bold text-white hover:bg-green-600 transition-colors">
+                  {
+                    submitting ? "Submitting" : "Submit"
+                  }
                 </button>
               </div>
             </form>
@@ -462,8 +468,10 @@ const Register = ({userData}) => {
                 )} type="reset" className="bg-red-500 w-full sm:w-40 py-2 rounded-md font-bold text-white hover:bg-red-600 transition-colors">
                   Clear
                 </button>
-                <button type="submit" className="bg-green-500 w-full sm:w-40 py-2 rounded-md font-bold text-white hover:bg-green-600 transition-colors">
-                  Submit
+                <button type="submit" disabled = {submitting}  className="bg-green-500 w-full sm:w-40 py-2 rounded-md font-bold text-white hover:bg-green-600 transition-colors">
+                 {
+                  submitting ? "Submitting" : "Submit"
+                 }
                 </button>
               </div>
             </form>
@@ -575,11 +583,12 @@ const Register = ({userData}) => {
                 <div className="col-span-2 truncate">{member.number}</div>
                 <div className="col-span-2 flex items-center gap-2 sm:gap-4">
                   <button
+                    disabled = {deleting}
                     onClick={() => deleteMember(member.memberpin)}
                     className="disabled:cursor-not-allowed hover:bg-red-50 p-1 rounded-full transition-colors"
                     title="Delete Member"
                   >
-                    <IoIosClose className="text-xl sm:text-2xl text-red-500" />
+                    {deleting ? "deleting" : <IoIosClose className="text-xl sm:text-2xl text-red-500" />}
                   </button>
                   <a className="hover:bg-gray-100 p-1 rounded-full transition-colors cursor-pointer" title="View Details">
                     <FaRegEye className="text-lg sm:text-xl text-gray-500" />

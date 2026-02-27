@@ -1,14 +1,10 @@
 import { FaRegEye } from "react-icons/fa"; 
 import { GrFormCheckmark } from "react-icons/gr"; 
 import { IoIosClose } from "react-icons/io"; 
-import React, { useState,useEffect } from "react";
-import { BiPlus, BiSearch, BiDoughnutChart } from "react-icons/bi";
-import { RiUpload2Line, RiMenuAddLine } from "react-icons/ri";
-import { IoMdSend } from "react-icons/io";
-import { AiTwotoneSetting, AiOutlineArrowUp } from "react-icons/ai";
+import { useState,useEffect } from "react";
+import { BiSearch, BiDoughnutChart } from "react-icons/bi";
 import { MdMultilineChart, MdAddChart } from "react-icons/md";
 import { HiOutlineDotsCircleHorizontal } from "react-icons/hi";
-import { CiMoneyBill } from "react-icons/ci";
 import { TbRefresh } from "react-icons/tb"; 
 import StatCard from "../h/StatCard";
 import axios from "axios";
@@ -27,6 +23,8 @@ const Claims = ({ userData }) => {
     type: "" // success, error, info
   })
 
+  const [verify,setVerifying] = useState(false)
+  const [paying,setPay] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(5)
   const [dashbordInfor, setDashbordInfor] = useState({
@@ -98,6 +96,7 @@ const Claims = ({ userData }) => {
   
   const handleVerifyUserClaims = (e) => {
     e.preventDefault()
+    setVerifying(true)
     axios
       .get(`${import.meta.env.VITE_HOST}/admin/verify-user-claim/${data.pin}/${data.benefit}`)
       .then((res) => {
@@ -114,11 +113,14 @@ const Claims = ({ userData }) => {
       }).finally(() =>setData({
       benefit: "",
       pin : ""
-    }))
+      })).finally(() => {
+      setVerifying(false)
+    })
   }
   
   const pay = (e) => {
     e.preventDefault()
+    setPay(true)
     axios
       .patch(
         `${import.meta.env.VITE_HOST}/admin/pay-benefit`,
@@ -137,7 +139,9 @@ const Claims = ({ userData }) => {
       }).finally(() =>setData({
       benefit: "",
       pin : ""
-    }))
+      })).finally(() => {
+      setPay(false)
+    })
   }
   
    // Pagination logic
@@ -240,7 +244,7 @@ const Claims = ({ userData }) => {
                     <option value="disaster">Disaster</option>
                     <option value="wrongful deduction">Wrongful Deduction</option>
                   </select>
-                  <input type="submit" value="Verify" className="w-full md:w-3/4 bg-[#BBF7D0] text-black font-bold py-2 rounded cursor-pointer hover:bg-green-300 transition-colors" />
+                  <input type="submit" disabled={verify} value={ verify ? "Verifying" : "Verify"} className="w-full md:w-3/4 bg-[#BBF7D0] text-black font-bold py-2 rounded cursor-pointer hover:bg-green-300 transition-colors" />
                 </div>
               </form>
             </div>
@@ -288,7 +292,7 @@ const Claims = ({ userData }) => {
                     <option value="disaster">Disaster</option>
                     <option value="wrongful deduction">Wrongful Deduction</option>
                   </select>
-                  <input type="submit" value="Pay Now" className="w-full md:w-3/4 bg-[#BBF7D0] text-black font-bold py-2 rounded cursor-pointer hover:bg-green-300 transition-colors" />
+                  <input type="submit" disabled={paying} value={paying ? "Processing payment Now" : "Pay Now"} className="w-full md:w-3/4 bg-[#BBF7D0] text-black font-bold py-2 rounded cursor-pointer hover:bg-green-300 transition-colors" />
                 </div>
               </form>
             </div>
