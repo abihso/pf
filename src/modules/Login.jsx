@@ -67,8 +67,8 @@ const handleSubmit = (e) => {
         </div>
       )}
 
-      {/* Top Section - Church Info (Mobile: top, Desktop: left) */}
-      <div className='gradient w-full lg:w-1/2 min-h-[40vh] lg:min-h-screen pt-10 lg:pt-20 px-4 order-1 lg:order-1'>
+      {/* Top Section -   (Mobile: top, Desktop: left) */}
+      <div className='gradient w-full lg:w-1/2 min-h-[40vh] lg:min-h-screen pt-10 lg:pt-20 px-4 order-1 lg:order-1 flex flex-col items-center justify-center'>
         <p className='font-extrabold text-lg text-center'>AltBit Softwares</p>
         <p className='text-center font-bold'>welfare app</p>
         <div className='flex justify-center items-center flex-col'>
